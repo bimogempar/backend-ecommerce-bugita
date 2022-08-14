@@ -3,6 +3,8 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
+const { parse } = require('dotenv');
 
 const prisma = new PrismaClient();
 
@@ -17,9 +19,10 @@ app.get('/', async (req, res) => {
 app.post('/add', async (req, res) => {
     const user = await prisma.User.create({
         data: {
-            id: req.body.id,
             name: req.body.name,
             email: req.body.email,
+            password: bcrypt.hashSync(req.body.password, 10),
+            no_hp: req.body.no_hp,
             address: req.body.address,
         }
     })
