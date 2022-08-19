@@ -18,3 +18,23 @@ model User {
   no_hp String?
   address String
 }
+
+model Product{
+  id Int @id @default(autoincrement())
+  name String 
+  description String
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  image String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String 
+  image String
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
