@@ -16,6 +16,7 @@
     "prisma": "^4.2.1"
   },
   "scripts": {
-    "start": "nodemon bin/www"
+    "start": "node bin/www",
+    "dev": "nodemon bin/www"
   }
 }
