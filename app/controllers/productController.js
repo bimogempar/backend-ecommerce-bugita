@@ -119,7 +119,7 @@ const deleteProduct = async (req, res) => {
         const deleteProduct = await prisma.product.delete({
             where: {
                 id: productId
-            }
+            },
         })
         res.send(200, {
             message: "Successfully deleted.",
@@ -135,5 +135,5 @@ module.exports = {
     addProduct,
     getSingleProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
 }

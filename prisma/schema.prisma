@@ -25,7 +25,7 @@ model Product{
   name String
   slug String 
   description String
-  category Category @relation(fields: [categoryId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId Int
   productsImage ProductImage[]
   createdAt DateTime @default(now())
@@ -43,6 +43,6 @@ model Category {
 model ProductImage {
   id Int @id @default(autoincrement())
   path String
-  product Product @relation(fields:[productId], references:[id])
+  product Product @relation(fields:[productId], references:[id], onDelete: Cascade)
   productId Int
 }
