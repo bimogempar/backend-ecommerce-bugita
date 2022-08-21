@@ -14,6 +14,7 @@ model User {
   id      String      @id @default(cuid())
   email   String   @unique
   password String 
+  role String
   name    String
   no_hp String?
   address String
@@ -25,7 +26,8 @@ model Product{
   description String
   category Category @relation(fields: [categoryId], references: [id])
   categoryId Int
-  image String
+  image String?
+  productsImage ProductImage[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -33,8 +35,14 @@ model Product{
 model Category {
   id Int @id @default(autoincrement())
   name String 
-  image String
   products Product[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ProductImage {
+  id Int @id @default(autoincrement())
+  path String
+  product Product @relation(fields:[productId], references:[id])
+  productId Int
 }

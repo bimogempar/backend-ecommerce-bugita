@@ -28,12 +28,18 @@ const getSingleProduct = async (req, res) => {
 }
 
 const addProduct = async (req, res) => {
+    console.log(req.body)
+    return res.json({
+        success: true,
+    })
+
     let product
+    const { name, description, image, categoryId } = req.body
     if (req.body.category) {
         product = {
-            name: req.body.name,
-            description: req.body.description,
-            image: req.body.image,
+            name,
+            description,
+            image,
             category: {
                 create: {
                     name: req.body.category.name,
@@ -43,10 +49,10 @@ const addProduct = async (req, res) => {
         }
     } else {
         product = {
-            name: req.body.name,
-            description: req.body.description,
-            image: req.body.image,
-            categoryId: parseInt(req.body.categoryId)
+            name,
+            description,
+            image,
+            categoryId: parseInt(categoryId)
         }
     }
 
