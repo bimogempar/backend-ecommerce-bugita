@@ -1,10 +1,17 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const cloudinary = require('../config/cloudinary')
+const fs = require('fs')
 
 const getAllProducts = async (req, res) => {
     const products = await prisma.product.findMany({
         include: {
-            category: true
+            category: true,
+            productsImage: {
+                select: {
+                    path: true
+                }
+            }
         }
     })
     res.send(200, products)
@@ -28,39 +35,59 @@ const getSingleProduct = async (req, res) => {
 }
 
 const addProduct = async (req, res) => {
-    console.log(req.body)
-    return res.json({
-        success: true,
-    })
-
     let product
-    const { name, description, image, categoryId } = req.body
+    const { name, description, categoryId } = req.body
+    const slug = name.replace(/\s+/g, '-').toLowerCase()
+    const urls = []
+
+    if (req.files) {
+        const uploader = async (path) => await cloudinary.uploads(path, `storage-ecommerce-bugita/product-images/${slug}`)
+        const files = req.files
+        for (const file of files) {
+            const { path } = file
+            const newPath = await uploader(path)
+            urls.push({ path: newPath.url })
+            fs.unlinkSync(path)
+        }
+    }
+
     if (req.body.category) {
         product = {
             name,
+            slug,
             description,
-            image,
             category: {
                 create: {
                     name: req.body.category.name,
-                    image: req.body.category.image,
+                }
+            },
+            productsImage: {
+                createMany: {
+                    data: urls
                 }
             }
         }
     } else {
         product = {
             name,
+            slug,
             description,
-            image,
-            categoryId: parseInt(categoryId)
+            categoryId: parseInt(categoryId),
+            productsImage: {
+                createMany: {
+                    data: urls
+                }
+            }
         }
     }
 
     try {
-        const createProduct = await prisma.product.create({ data: product, include: { category: true } })
+        const createProduct = await prisma.product.create({ data: product, include: { category: true, productsImage: true } })
         res.send(200, createProduct)
     } catch (error) {
-        res.send(error)
+        res.send(500, {
+            message: 'error creating product',
+        })
     }
 }
 
@@ -75,7 +102,6 @@ const updateProduct = async (req, res) => {
                 name: req.body.name,
                 description: req.body.description,
                 categoryId: req.body.categoryId,
-                image: req.body.image,
             },
             include: {
                 category: true
