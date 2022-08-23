@@ -1,18 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const productController = require('../controllers/productController')
-const categoryController = require('../controllers/categoryController')
+const { productController, categoryController, authController } = require('../controllers')
 const upload = require('../middlewares/multer')
 
 // check route
 router.get('/', (req, res) => {
     res.send(200, {
-        message: 'Hello World'
+        message: 'Server is running!'
     })
 })
 
+// auth
+router.post('/auth/signup', authController.signUp)
+router.post('/auth/login', authController.login)
+
 // products
-router.get('/products', productController.getAllProducts)
+router.get('/products', authController.authorize, productController.getAllProducts)
 router.get('/product/:productId', productController.getSingleProduct)
 router.post('/addproduct', upload.array('image'), productController.addProduct)
 router.put('/product/:productId/update', productController.updateProduct)
