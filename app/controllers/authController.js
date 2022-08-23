@@ -21,6 +21,28 @@ const authorize = async (req, res, next) => {
     }
 }
 
+const me = async (req, res) => {
+    try {
+        const auth = req.headers.authorization
+        if (!auth) {
+            return res.status(401).json({
+                message: 'Invalid authorization header',
+            })
+        }
+        const token = auth.split(" ")[1]
+        const decoded = decodeToken(token)
+        const findUser = await prisma.user.findFirstOrThrow({
+            where: {
+                id: decoded.id,
+            }
+        })
+        const user = exclude(findUser, 'password')
+        res.send(200, user)
+    } catch (error) {
+        res.send(401, error)
+    }
+}
+
 const signUp = async (req, res) => {
     try {
         const { email, password, name, no_hp, address, role, } = req.body
@@ -108,8 +130,16 @@ const decodeToken = async (token) => {
     return jwt.verify(token, process.env.JWT_SECRET)
 }
 
+const exclude = (user, ...keys) => {
+    for (let key of keys) {
+        delete user[key]
+    }
+    return user
+}
+
 module.exports = {
     signUp,
     login,
-    authorize
+    authorize,
+    me
 }

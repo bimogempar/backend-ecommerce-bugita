@@ -13,6 +13,7 @@ router.get('/', (req, res) => {
 // auth
 router.post('/auth/signup', authController.signUp)
 router.post('/auth/login', authController.login)
+router.post('/auth/me', authController.me)
 
 // products
 router.get('/products', authController.authorize, productController.getAllProducts)
