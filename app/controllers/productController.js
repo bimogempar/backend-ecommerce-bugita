@@ -4,7 +4,20 @@ const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
 
 const getAllProducts = async (req, res) => {
+    const { search, skip, take, orderBy } = req.query
+    const mySearch = search ? {
+        OR: [
+            { name: { search: search } },
+            { description: { search: search } },
+            { category: { name: { search: search } } }
+        ]
+    } : {}
     const products = await prisma.product.findMany({
+        where: {
+            ...mySearch
+        },
+        take: Number(take) || 10,
+        skip: Number(skip) || 0,
         include: {
             category: true,
             productsImage: {
@@ -12,7 +25,10 @@ const getAllProducts = async (req, res) => {
                     path: true
                 }
             }
-        }
+        },
+        orderBy: {
+            updatedAt: orderBy || undefined,
+        },
     })
     res.send(200, products)
 }
