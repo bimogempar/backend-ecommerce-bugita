@@ -1,6 +1,9 @@
 {
   "name": "backend-ecommerce-bugita",
   "version": "1.0.0",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
@@ -20,5 +23,8 @@
   "scripts": {
     "start": "node bin/www",
     "dev": "nodemon bin/www"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^7.4.0"
   }
 }

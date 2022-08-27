@@ -31,7 +31,8 @@ const me = async (req, res) => {
         }
         const token = auth.split(" ")[1]
         const decoded = decodeToken(token)
-        const findUser = await prisma.user.findFirstOrThrow({
+        console.log(token)
+        const findUser = await prisma.user.findUnique({
             where: {
                 id: decoded.id,
             }
@@ -39,13 +40,16 @@ const me = async (req, res) => {
         const user = exclude(findUser, 'password')
         res.send(200, user)
     } catch (error) {
-        res.send(401, error)
+        res.send(401, {
+            error,
+            message: "Unauthorized access_token",
+        })
     }
 }
 
 const signUp = async (req, res) => {
     try {
-        const { email, password, name, no_hp, address, role, } = req.body
+        const { email, password, name, no_hp, address, role, avatar } = req.body
         const user = await prisma.user.findFirst({
             where: {
                 email
@@ -65,6 +69,7 @@ const signUp = async (req, res) => {
                 role: role ? role : "user",
                 no_hp,
                 address,
+                avatar,
             }
         })
         res.send(200, {
@@ -104,7 +109,7 @@ const login = async (req, res) => {
         return res.send(200, {
             message: "Successfully logged in user",
             user: user,
-            token: token
+            access_token: token
         })
     } catch (error) {
         res.send(500, {
@@ -126,7 +131,7 @@ const createToken = async (user) => {
     )
 }
 
-const decodeToken = async (token) => {
+const decodeToken = (token) => {
     return jwt.verify(token, process.env.JWT_SECRET)
 }
 
