@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 const authorize = async (req, res, next) => {
     try {
         const auth = req.headers.authorization
+        console.log(auth)
         if (!auth) {
             return res.status(401).json({
                 message: 'Invalid authorization header',
@@ -31,7 +32,6 @@ const me = async (req, res) => {
         }
         const token = auth.split(" ")[1]
         const decoded = decodeToken(token)
-        console.log(token)
         const findUser = await prisma.user.findUnique({
             where: {
                 id: decoded.id,

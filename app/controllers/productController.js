@@ -4,7 +4,10 @@ const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
 
 const getAllProducts = async (req, res) => {
-    const { search, skip, take, orderBy } = req.query
+    let { search, skip, take, orderBy } = req.query
+    if (search) {
+        search = search.split(" ").join(" & ");
+    }
     const mySearch = search ? {
         OR: [
             { name: { search: search } },
@@ -52,7 +55,9 @@ const getSingleProduct = async (req, res) => {
 
 const addProduct = async (req, res) => {
     let product
-    const { name, description, categoryId } = req.body
+    let price = req.body.price
+    price = parseInt(price, 10)
+    const { name, description, categoryId, } = req.body
     const slug = name.replace(/\s+/g, '-').toLowerCase()
     const urls = []
 
@@ -67,11 +72,12 @@ const addProduct = async (req, res) => {
         }
     }
 
-    if (req.body.category) {
+    if (req.body.category.name !== '') {
         product = {
             name,
             slug,
             description,
+            price,
             category: {
                 create: {
                     name: req.body.category.name,
@@ -88,6 +94,7 @@ const addProduct = async (req, res) => {
             name,
             slug,
             description,
+            price,
             categoryId: parseInt(categoryId),
             productsImage: {
                 createMany: {
@@ -99,10 +106,14 @@ const addProduct = async (req, res) => {
 
     try {
         const createProduct = await prisma.product.create({ data: product, include: { category: true, productsImage: true } })
-        res.send(200, createProduct)
+        res.send(200, {
+            message: 'Product created successfully',
+            createProduct
+        })
     } catch (error) {
         res.send(500, {
-            message: 'error creating product',
+            message: 'Error creating product',
+            error: error.message
         })
     }
 }

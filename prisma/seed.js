@@ -44,6 +44,7 @@ const seedProduct = async () => {
                     slug: faker.lorem.slug(3),
                     description: faker.lorem.sentence(),
                     categoryId: faker.datatype.number({ 'min': 1, 'max': 5 }),
+                    price: parseInt(faker.commerce.price(100, 1000000, 0)),
                     productsImage: {
                         createMany: {
                             data: {
