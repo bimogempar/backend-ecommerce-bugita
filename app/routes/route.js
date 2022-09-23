@@ -29,4 +29,23 @@ router.post('/addcategory', authController.authorize, categoryController.addCate
 router.put('/category/:categoryId/update', authController.authorize, categoryController.updateCategory)
 router.delete('/category/:categoryId/delete', authController.authorize, categoryController.deleteCategory)
 
+// test cloudinary
+var cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const multer = require('multer');
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'storage-ecommerce-bugita/product-images',
+    },
+});
+const parser = multer({ storage: storage });
+router.post('/upload-file', parser.array('image'), function (req, res, next) {
+    try {
+        res.json(req.files)
+    } catch (error) {
+        res.json(error.message)
+    }
+})
+
 module.exports = router
