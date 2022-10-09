@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const cloudinary = require('../config/cloudinary')
+const cloudinary = require('../config/multer-cloudinary')
 const fs = require('fs')
 
 const getAllProducts = async (req, res) => {
@@ -62,13 +62,9 @@ const addProduct = async (req, res) => {
     const urls = []
 
     if (req.files) {
-        const uploader = async (path) => await cloudinary.uploads(path, `storage-ecommerce-bugita/product-images/${slug}`)
-        const files = req.files
-        for (const file of files) {
+        for (const file of req.files) {
             const { path } = file
-            const newPath = await uploader(path)
-            urls.push({ path: newPath.url })
-            fs.unlinkSync(path)
+            urls.push({ path })
         }
     }
 

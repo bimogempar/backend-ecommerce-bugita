@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { productController, categoryController, authController } = require('../controllers')
-const upload = require('../middlewares/multer')
+const multerCloudinary = require('../config/multer-cloudinary')
 
 // check route
 router.get('/', (req, res) => {
@@ -18,7 +18,7 @@ router.post('/auth/me', authController.me)
 // products
 router.get('/products', productController.getAllProducts)
 router.get('/product/:productId', productController.getSingleProduct)
-router.post('/addproduct', authController.authorize, upload.array('image'), productController.addProduct)
+router.post('/addproduct', authController.authorize, multerCloudinary.parser.array('image'), productController.addProduct)
 router.put('/product/:productId/update', authController.authorize, productController.updateProduct)
 router.delete('/product/:productId/delete', authController.authorize, productController.deleteProduct)
 
@@ -30,17 +30,7 @@ router.put('/category/:categoryId/update', authController.authorize, categoryCon
 router.delete('/category/:categoryId/delete', authController.authorize, categoryController.deleteCategory)
 
 // test cloudinary
-var cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'storage-ecommerce-bugita/product-images',
-    },
-});
-const parser = multer({ storage: storage });
-router.post('/upload-file', parser.array('image'), function (req, res, next) {
+router.post('/upload-file', multerCloudinary.parser.array('image'), function (req, res, next) {
     try {
         res.json(req.files)
     } catch (error) {
