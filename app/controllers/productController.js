@@ -23,9 +23,9 @@ const getAllProducts = async (req, res) => {
 
     const mySearch = search ? {
         OR: [
-            { name: { search: search } },
-            { description: { search: search } },
-            { category: { name: { search: search } } }
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+            { category: { name: { contains: search, mode: 'insensitive' } } }
         ]
     } : {}
 
@@ -185,6 +185,7 @@ const addProduct = async (req, res) => {
     const { name, description, categoryId, } = req.body
     const slug = name.replace(/\s+/g, '-').toLowerCase()
     const urls = []
+    const categoryName = req.body.category?.name
 
     if (req.files) {
         for (const file of req.files) {
@@ -193,7 +194,7 @@ const addProduct = async (req, res) => {
         }
     }
 
-    if (req.body.category.name !== '') {
+    if (categoryName) {
         product = {
             name,
             slug,
@@ -201,7 +202,7 @@ const addProduct = async (req, res) => {
             price,
             category: {
                 create: {
-                    name: req.body.category.name,
+                    name: categoryName,
                 }
             },
             productsImage: {
@@ -227,12 +228,12 @@ const addProduct = async (req, res) => {
 
     try {
         const createProduct = await prisma.product.create({ data: product, include: { category: true, productsImage: true } })
-        res.send(200, {
+        res.status(200).send({
             message: 'Product created successfully',
             createProduct
         })
     } catch (error) {
-        res.send(500, {
+        res.status(500).send({
             message: 'Error creating product',
             error: error.message
         })
@@ -240,6 +241,17 @@ const addProduct = async (req, res) => {
 }
 
 const updateProduct = async (req, res) => {
+    console.log('this req body', req.body)
+
+    const urls = []
+    if (req.files) {
+        for (const file of req.files) {
+            const { path } = file
+            urls.push({ path })
+        }
+    }
+    console.log('this urls', urls)
+
     const productId = parseInt(req.params.productId)
     try {
         const updateProduct = await prisma.product.update({
@@ -250,9 +262,15 @@ const updateProduct = async (req, res) => {
                 name: req.body.name,
                 description: req.body.description,
                 categoryId: req.body.categoryId,
+                productsImage: {
+                    createMany: {
+                        data: urls
+                    }
+                }
             },
             include: {
-                category: true
+                category: true,
+                productsImage: true,
             }
         })
         res.send(200, updateProduct)
