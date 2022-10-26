@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken')
 const authorize = async (req, res, next) => {
     try {
         const auth = req.headers.authorization
-        console.log(auth)
         if (!auth) {
             return res.status(401).json({
                 message: 'Invalid authorization header',
@@ -93,14 +92,14 @@ const login = async (req, res) => {
             }
         })
         if (!user) {
-            return res.send(404, {
+            return res.send(200, {
                 message: "Email not found"
             })
         }
 
         const isPasswordValid = await verfiyPassword(password, user.password)
         if (!isPasswordValid) {
-            return res.send(404, {
+            return res.send(200, {
                 message: "Password does not match"
             })
         }
