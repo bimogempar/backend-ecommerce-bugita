@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const cloudinary = require('../config/multer-cloudinary')
+const cloudinaryv2 = require('cloudinary').v2;
 const fs = require('fs')
 
 const getAllProducts = async (req, res) => {
@@ -51,11 +52,7 @@ const getAllProducts = async (req, res) => {
                 },
                 include: {
                     category: true,
-                    productsImage: {
-                        select: {
-                            path: true
-                        }
-                    }
+                    productsImage: true,
                 },
             });
             res.paginatedResult = result;
@@ -169,7 +166,8 @@ const getSingleProduct = async (req, res) => {
                 id: productId
             },
             include: {
-                category: true
+                category: true,
+                productsImage: true,
             }
         })
         res.send(200, product)
@@ -189,8 +187,8 @@ const addProduct = async (req, res) => {
 
     if (req.files) {
         for (const file of req.files) {
-            const { path } = file
-            urls.push({ path })
+            const { path, filename } = file
+            urls.push({ path, filename })
         }
     }
 
@@ -242,17 +240,37 @@ const addProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     console.log('this req body', req.body)
+    const productId = parseInt(req.params.productId)
+    const categoryId = parseInt(req.body.categoryId)
+
+    const imagesProduct = await prisma.productImage.findMany({
+        where: {
+            productId: productId
+        }
+    })
+
+    if (imagesProduct.length > 0 && req.files.length > 0 || req.body.image === '0') {
+        for (const img of imagesProduct) {
+            cloudinaryv2.uploader.destroy(img.filename, async function (error, result) {
+                console.log({ result })
+                console.log(parseInt(img.id))
+                const imgId = parseInt(img.id)
+                const deleteImage = await prisma.productImage.delete({ where: { id: imgId } })
+                console.log({ deleteImage })
+            })
+        }
+    }
 
     const urls = []
     if (req.files) {
+        console.log(req.files)
         for (const file of req.files) {
-            const { path } = file
-            urls.push({ path })
+            const { path, filename } = file
+            urls.push({ path, filename })
         }
     }
     console.log('this urls', urls)
 
-    const productId = parseInt(req.params.productId)
     try {
         const updateProduct = await prisma.product.update({
             where: {
@@ -261,7 +279,7 @@ const updateProduct = async (req, res) => {
             data: {
                 name: req.body.name,
                 description: req.body.description,
-                categoryId: req.body.categoryId,
+                categoryId: categoryId,
                 productsImage: {
                     createMany: {
                         data: urls

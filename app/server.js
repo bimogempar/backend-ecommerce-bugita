@@ -12,6 +12,9 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
 
+app.get('/', function (req, res) {
+    res.redirect('/api/v1/')
+});
 app.use('/api/v1/', router);
 
 module.exports = app;

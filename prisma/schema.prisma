@@ -46,6 +46,7 @@ model Category {
 model ProductImage {
   id Int @id @default(autoincrement())
   path String
+  filename String
   product Product @relation(fields:[productId], references:[id], onDelete: Cascade)
   productId Int
 }

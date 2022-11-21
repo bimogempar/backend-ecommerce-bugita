@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const helper = require('./../helpers/helper')
 
 const authorize = async (req, res, next) => {
     try {
@@ -48,8 +49,9 @@ const me = async (req, res) => {
 
 const signUp = async (req, res) => {
     try {
+        console.log(req.body)
         const { email, password, name, no_hp, address, role, avatar } = req.body
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.findUnique({
             where: {
                 email
             }
@@ -73,7 +75,7 @@ const signUp = async (req, res) => {
         })
         res.send(200, {
             message: "Successfully created user",
-            user: newUser
+            user: helper.exclude(newUser, 'password')
         })
     } catch (error) {
         res.send(500, {
@@ -86,7 +88,7 @@ const signUp = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.findUnique({
             where: {
                 email
             }
@@ -107,7 +109,7 @@ const login = async (req, res) => {
         const token = await createToken(user)
         return res.send(200, {
             message: "Successfully logged in user",
-            user: user,
+            user: helper.exclude(user, 'password'),
             access_token: token
         })
     } catch (error) {
